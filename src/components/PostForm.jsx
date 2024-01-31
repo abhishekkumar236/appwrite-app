@@ -49,7 +49,7 @@ function PostForm({ post }) {
         : null;
 
       if (file) {
-        storageService.deleteFile(post.featuredImage);
+        storageService.deleteFile(post.image);
       }
 
       const dbPost = await dbService.updatePost(post.$id, {
@@ -70,6 +70,8 @@ function PostForm({ post }) {
           ...data,
           userId: userData.$id,
         });
+        console.log("data", data);
+        console.log("post", dbPost);
 
         if (dbPost) {
           navigate(`/post/${dbPost.$id}`);
@@ -128,7 +130,6 @@ function PostForm({ post }) {
         )}
         <Select
           options={["active", "inactive"]}
-          label="Status"
           className="mb-4"
           {...register("status", { required: true })}
         />

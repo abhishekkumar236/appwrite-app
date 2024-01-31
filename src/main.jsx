@@ -16,6 +16,7 @@ import AddPost from "./pages/AddPost.jsx";
 import EditPost from "./pages/EditPost.jsx";
 import Error from "./components/Error.jsx";
 import { Provider } from "react-redux";
+import Post from "./pages/Post.jsx";
 
 const router = createBrowserRouter(
   createRoutesFromElements(
@@ -24,8 +25,8 @@ const router = createBrowserRouter(
       <Route path="/login" element={<Login />} />
       <Route path="/posts" element={<AllPosts />} />
       <Route path="/add-post" element={<AddPost />} />
-      <Route path="/edit-post" element={<EditPost />} />
-      {/* <Route path="/" element={<Error />} /> */}
+      <Route path="/edit-post/:slug" element={<EditPost />} />
+      <Route path="/post/:slug" element={<Post />} />
     </Route>
   )
 );
