@@ -1,14 +1,15 @@
 import React from "react";
 import { Link } from "react-router-dom";
-
+import storageService from "../appwrite/storageService";
 function PostCard({ $id, title, content, image }) {
   return (
     <>
       <div className="bg-gray-800 rounded-xl text-white my-4 w-96">
         <div>
           <img
-            src="https://images.pexels.com/photos/17051079/pexels-photo-17051079/free-photo-of-trees-on-sea-shore.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1"
-            alt=""
+            src={storageService.getPreview(image)}
+            // "https://images.pexels.com/photos/17051079/pexels-photo-17051079/free-photo-of-trees-on-sea-shore.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1"
+            alt={title}
             className="h-48 w-full object-cover"
           />
         </div>

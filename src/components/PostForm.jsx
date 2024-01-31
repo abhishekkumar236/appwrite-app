@@ -1,8 +1,14 @@
 import React, { useCallback, useEffect } from "react";
-import { TextEditor, Input, Button } from "./index";
+import { TextEditor, Input, Button, Select } from "./index";
 import { useForm } from "react-hook-form";
+import dbService from "../appwrite/dbService";
+import storageService from "../appwrite/storageService";
+import { useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
 
 function PostForm({ post }) {
+  const userData = useSelector((state) => state.auth.user);
+  const navigate = useNavigate();
   const { register, handleSubmit, watch, setValue, control, getValues } =
     useForm({
       defaultValues: {
@@ -36,8 +42,40 @@ function PostForm({ post }) {
     return () => subscription.unsubscribe();
   }, [watch, slugTransform, setValue]);
 
-  const submit = (data) => {
-    console.log(data);
+  const submit = async (data) => {
+    if (post) {
+      const file = data.image[0]
+        ? await storageService.uploadFile(data.image[0])
+        : null;
+
+      if (file) {
+        storageService.deleteFile(post.featuredImage);
+      }
+
+      const dbPost = await dbService.updatePost(post.$id, {
+        ...data,
+        image: file ? file.$id : undefined,
+      });
+
+      if (dbPost) {
+        navigate(`/post/${dbPost.$id}`);
+      }
+    } else {
+      const file = await storageService.uploadFile(data.image[0]);
+
+      if (file) {
+        const fileId = file.$id;
+        data.image = fileId;
+        const dbPost = await dbService.createPost({
+          ...data,
+          userId: userData.$id,
+        });
+
+        if (dbPost) {
+          navigate(`/post/${dbPost.$id}`);
+        }
+      }
+    }
   };
 
   return (
@@ -49,15 +87,29 @@ function PostForm({ post }) {
         <Input
           type="text"
           placeholder="Title"
-          {...register("title")}
+          {...register("title", { required: true })}
           className="px-4 w-full py-3 mb-3 border-2 rounded-xl border-gray-600 bg-gray-700 focus:outline-none focus:border-blue-500"
         />
         <Input
           type="text"
           placeholder="Slug"
-          {...register("slug")}
+          {...register("slug", { required: true })}
           className="px-4 w-full py-3 mb-3 border-2 rounded-xl border-gray-600 bg-gray-700 focus:outline-none focus:border-blue-500"
+          onInput={(e) => {
+            setValue("slug", slugTransform(e.currentTarget.value), {
+              shouldValidate: true,
+            });
+          }}
         />
+        {post && (
+          <div className="w-full mb-4">
+            <img
+              src={storageService.getPreview(post.image)}
+              alt={post.title}
+              className="rounded-lg"
+            />
+          </div>
+        )}
         <Input
           label="Featured Image :"
           type="file"
@@ -65,6 +117,22 @@ function PostForm({ post }) {
           accept="image/png, image/jpg, image/jpeg, image/gif"
           {...register("image", { required: !post })}
         />
+        {post && (
+          <div className="w-full mb-4">
+            <img
+              src={storageService.getPreview(post.image)}
+              alt={post.title}
+              className="rounded-lg"
+            />
+          </div>
+        )}
+        <Select
+          options={["active", "inactive"]}
+          label="Status"
+          className="mb-4"
+          {...register("status", { required: true })}
+        />
+
         <TextEditor control={control} getValues={getValues("content")} />
         <Button>Submit</Button>
       </form>

@@ -32,7 +32,7 @@ class StorageService {
     }
   }
 
-  getFilePreview(fileId) {
+  getPreview(fileId) {
     return this.bucket.getFilePreview(conf.appwriteBucketId, fileId);
   }
 }
